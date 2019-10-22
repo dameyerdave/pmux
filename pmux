@@ -1,0 +1,53 @@
+#! /bin/bash
+# Example from https://stackoverflow.com/questions/54628034/how-can-i-create-multiple-tmux-sessions-containing-windows-from-command-line
+#tmuxstart() {
+#    tmux new-session -d -s $1 >/dev/null
+#    tmux rename-window -t $1:0 'main'
+#    tmux splitw -v -p 10 -t $1:0.0
+#    tmux splitw -h -p 80 -t $1:0.1
+#    #required; otherwise pane numbering is bs
+#    tmux select-pane -t $1:0.0
+#    tmux splitw -h -p 5 -t $1:0.0
+#    tmux send-keys -t $1:0.2 'sudo htop' Enter
+#    tmux send-keys -t $1:0.1 'tmux clock -t $1:0.1' Enter
+#    tmux select-pane -t $1:0.0
+#    tmux new-window -t $1
+#    tmux rename-window -t $1:1 'second'
+#    tmux splitw -v -p 10 -t $1:1.0
+#    tmux splitw -h -p 80 -t $1:1.1
+#    tmux select-pane -t $1:1.0
+#    tmux splitw -h -p 5 -t $1:1.0
+#    tmux clock -t $1:1.1
+#    tmux new-window -t $1
+#    tmux rename-window -t $1:2 'scratch'
+#    tmux splitw -v -p 10 -t $1:2.0
+#    tmux select-pane -t $1:2.0
+#    tmux splitw -h -p 5 -t $1:2.0
+#    tmux clock -t $1:2.1
+#    tmux select-window -t $1:0.0
+#    tmux a -t $1
+#}
+
+DIR=$(cd $(dirname $0); pwd -P)
+
+if [ "$1" != "" ]; then
+    conf="$1"
+else
+    conf="pmux"
+fi
+if [ ! -e ${DIR}/${conf}.conf ]; then
+    echo "Config file ${DIR}/${conf}.conf does not exist!"
+    exit 1
+fi
+source ${DIR}/${conf}.conf
+
+tmux new-session -d -s ${sessionname} >/dev/null
+maxidx=$(expr $numsessions - 1)
+for i in $(seq 0 $maxidx) 
+do
+    if [ $i -gt 0 ]; then
+        tmux new-window -t ${sessionname}
+    fi
+    tmux send-keys -t ${sessionname}:$i "${session[$i]}" Enter
+done
+tmux a -t ${sessionname}
