@@ -42,12 +42,15 @@ fi
 source ${DIR}/${conf}.conf
 
 tmux new-session -d -s ${sessionname} >/dev/null
-maxidx=$(expr $numsessions - 1)
+tmux rename-window -t ${sessionname}:0 "'${window_name[0]}'"
+maxidx=$(expr $numwindows - 1)
 for i in $(seq 0 $maxidx) 
 do
     if [ $i -gt 0 ]; then
         tmux new-window -t ${sessionname}
+        tmux rename-window -t ${sessionname}:$i "'${window_name[$i]}'"
     fi
-    tmux send-keys -t ${sessionname}:$i "${session[$i]}" Enter
+    tmux send-keys -t ${sessionname}:$i "${window_command[$i]}" Enter
 done
+tmux select-window -t ${sessionname}:0
 tmux a -t ${sessionname}
